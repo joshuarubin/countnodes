@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"errors"
 	"log"
 	"math/big"
 	"os"
@@ -61,6 +62,10 @@ func before(c *cli.Context) error {
 	numNodes := num.Uint64()
 	log.Printf("generating binary tree with %d nodes\n", numNodes)
 
+	if numNodes == 0 {
+		return nil
+	}
+
 	numNodes--
 	tree = &testNode{}
 	nodes := []*testNode{tree}
@@ -71,17 +76,23 @@ func before(c *cli.Context) error {
 		// shift off the first node
 		cur, nodes = nodes[0], nodes[1:]
 
-		if numNodes > 0 {
-			n := &testNode{}
-			nodes = append(nodes, n)
-			cur.left = n
-			numNodes--
-		}
+		for _, i := range node.Sides {
+			if numNodes == 0 {
+				break
+			}
 
-		if numNodes > 0 {
 			n := &testNode{}
 			nodes = append(nodes, n)
-			cur.right = n
+
+			switch i {
+			case node.LeftSide:
+				cur.left = n
+			case node.RightSide:
+				cur.right = n
+			default:
+				return errors.New("invalid side")
+			}
+
 			numNodes--
 		}
 	}
