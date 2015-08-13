@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"crypto/rand"
 	"errors"
 	"log"
@@ -68,13 +69,12 @@ func before(c *cli.Context) error {
 
 	numNodes--
 	tree = &testNode{}
-	nodes := []*testNode{tree}
+	nodes := list.New()
+	nodes.PushBack(tree)
 
-	for len(nodes) > 0 {
-		var cur *testNode
-
-		// shift off the first node
-		cur, nodes = nodes[0], nodes[1:]
+	for nodes.Front() != nil {
+		cur := nodes.Front().Value.(*testNode)
+		nodes.Remove(nodes.Front())
 
 		for _, i := range node.Sides {
 			if numNodes == 0 {
@@ -82,7 +82,7 @@ func before(c *cli.Context) error {
 			}
 
 			n := &testNode{}
-			nodes = append(nodes, n)
+			nodes.PushBack(n)
 
 			switch i {
 			case node.LeftSide:
